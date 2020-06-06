@@ -2,8 +2,11 @@
 
 This prgram helps you find LanCache cache-files associated with certain content and remove them. Based on the cache-key you can easily find cache-files associated with certain cached content using the search pattern. This is usefull in case of a corrupt or stale cache-file.
 
+# Install
 This tool is based on Python3 and doesn't require additional packages.
 
+# Usage
+```
 usage:
        [-h] [-p PATH] [-P PATTERN] [-r READ] [-w WRITE] [-d]
        [-l {debug,info,warning,error}]
@@ -30,8 +33,10 @@ optional arguments:
   -l {debug,info,warning,error}, --loglevel {debug,info,warning,error}
                         Set the log-level. The results of the search are
                         printed on debug level. Default: info
+```
 
-example:
+# Example
+Some usage examples:
 * python3 lancache_search.py -p /cache -P FOO
 * python3 lancache_search.py -p /cache -i -P foo
 * python3 lancache_search.py -p /cache -w output.txt
