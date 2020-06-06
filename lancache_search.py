@@ -1,5 +1,5 @@
 from glob import glob
-from os.path import isfile
+from os.path import isfile,isdir
 from os import remove
 from argparse import ArgumentParser
 from sys import stdout
@@ -11,16 +11,18 @@ from logging import debug,info,warning,error
 KEY          = "KEY:".encode('utf-8')
 count_hits   = 0
 count_files  = 0
+count_dir    = 0
 hit_files    = []
 
 ## Configure the program arguments
 parser = ArgumentParser("This prgram helps you find LanCache cache-files associated with certain content and remove them.")
 parser.add_argument("-p", "--path", help="The path of the LanCache cache-files. Please specify either --path or --read. In case both parameters are given, --path will be ignored.")
-parser.add_argument("-P", "--pattern", help="The pattern to look for in the cache-files. If no pattern is given, all files will be returned.", default="")
+parser.add_argument("-P", "--pattern", help="The pattern to look for in the cache-files, case sensitive. If no pattern is given, all files will be returned.", default="")
+parser.add_argument("-i", "--ignorecase", help="Search the pattern ignoring case.", action='store_true')
 parser.add_argument("-r", "--read", help="Read previous stored search result from the given input file. Please specify either --path or --read. In case both parameters are given, --path will be ignored.")
 parser.add_argument("-w", "--write", help="Write the results of the search to the given output file.")
 parser.add_argument("-d", "--delete", help="Remove the matched files from the LanCache cache. Please also specify option --read or --pattern.", action='store_true')
-parser.add_argument("-l", "--loglevel", help="Set the log-level. Default: info", default="info", choices=["debug","info","warning","error"])
+parser.add_argument("-l", "--loglevel", help="Set the log-level. The results of the search are printed on debug level. Default: info", default="info", choices=["debug","info","warning","error"])
 args = parser.parse_args()
 
 ## Set log-level
@@ -34,6 +36,12 @@ elif args.loglevel=="error":
     loglevel = ERROR
 FORMAT = '%(asctime)s %(levelname)s LanCache_Search %(message)s'
 basicConfig(stream=stdout, level=loglevel, format=FORMAT)
+
+## Set the pattern in the proper case
+if args.ignorecase:
+    pattern = args.pattern.lower()
+else:
+    pattern = args.pattern
 
 ## Read / Validate the parameters
 if args.read:       # Get the filenames from the input file
@@ -85,6 +93,8 @@ if args.write:
 ## The main search loop
 for file in files:
     if not isfile(file):
+        if isdir(file):
+            count_dir = count_dir + 1
         continue        # Skip everything that is not a file, for example directories
 
     loop_count  = 0
@@ -100,11 +110,16 @@ for file in files:
     fp.close
 
     if not loop_count < 5:
-        debug("No match found for: " + file)
+        warning("No \"KEY:\" found for file: " + file)
         continue
 
     line = line.decode('utf-8').rstrip()
-    if (args.pattern in line):
+    if args.ignorecase:
+        line_cmp = line.lower()
+    else:
+        line_cmp = line
+
+    if (pattern in line_cmp):
         if args.write:
             fp_output.write(file + "||" + line + "\n")
         debug("Match file: " + file + "||" + line)
@@ -114,6 +129,7 @@ for file in files:
 info("Number of files: "+str(count_files))
 info("Number of hits: "+str(count_hits))
 info("Number of misses: "+str(count_files-count_hits))
+info("Number of directories: "+str(count_dir))
 
 ## Close the output-file
 if args.write:

@@ -14,8 +14,10 @@ optional arguments:
                         either --path or --read. In case both parameters are
                         given, --path will be ignored.
   -P PATTERN, --pattern PATTERN
-                        The pattern to look for in the cache-files. If no
-                        pattern is given, all files will be returned.
+                        The pattern to look for in the cache-files, case
+                        sensitive. If no pattern is given, all files will be
+                        returned.
+  -i, --ignorecase      Search the pattern ignoring case.
   -r READ, --read READ  Read previous stored search result from the given
                         input file. Please specify either --path or --read. In
                         case both parameters are given, --path will be
@@ -26,9 +28,12 @@ optional arguments:
   -d, --delete          Remove the matched files from the LanCache cache.
                         Please also specify option --read or --pattern.
   -l {debug,info,warning,error}, --loglevel {debug,info,warning,error}
-                        Set the log-level. Default: info
+                        Set the log-level. The results of the search are
+                        printed on debug level. Default: info
 
 example:
+* python3 lancache_search.py -p /cache -P FOO
+* python3 lancache_search.py -p /cache -i -P foo
 * python3 lancache_search.py -p /cache -w output.txt
 * python3 lancache_search.py -p /cache -P FOO -w output.txt
 * python3 lancache_search.py -r output.txt
